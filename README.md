@@ -1,4 +1,5 @@
 # Reacher with Obstacles
+This repo contains some experiments for the paper "Exploiting Robot Abstractions in Episodic RL via Reward Shaping and Heuristics". More specifically, these experiments concern the Reacher task (more information [here](https://gymnasium.farama.org/environments/mujoco/reacher/) ), trained both with the RL methods presented in the paper, and using trajectory optimization. 
 
 Use the pixi environment to run the code. Install pixi on https://pixi.sh/latest/. Then, install the environment by running `pixi install`.
 
