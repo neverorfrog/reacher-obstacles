@@ -3,18 +3,58 @@ from reacher_obstacles.trajopt.robot_model import RobotModel
 import casadi
 from pinocchio import casadi as cpin
 
-w_vel = 1e-5
-w_acc = 1e-5
-w_target = 1e-2 
-w_target_term = 5 # 20 for env 4
 
 class ReacherTrajopt():
     
-    def __init__(self, robot_model: RobotModel, T: int = 100):
+    def __init__(self, robot_model: RobotModel, T: int = 100, expid: str = "1a"):
         self.robot_model = robot_model
         self.T = T
         self.initialized = False
+        self.expid = expid
         
+        if expid == "1a":
+            self.w_vel = 1e-5
+            self.w_acc = 1e-5
+            self.w_target = 1e-1 
+            self.w_target_term = 5
+            self.obs_distance_link1 = 0.05
+            self.obs_distance_link2 = 0.05
+            self.obs_distance_fingertip = 0.05
+        elif expid == "2a":
+            self.w_vel = 1e-5
+            self.w_acc = 1e-5
+            self.w_target = 1e-1 
+            self.w_target_term = 20
+            self.obs_distance_link1 = 0.03
+            self.obs_distance_link2 = 0.03
+            self.obs_distance_fingertip = 0.03
+        elif expid == "3a":
+            self.w_vel = 1e-5
+            self.w_acc = 1e-5
+            self.w_target = 1e-1 
+            self.w_target_term = 50
+            self.obs_distance_link1 = 0.03
+            self.obs_distance_link2 = 0.03
+            self.obs_distance_fingertip = 0.04
+        elif expid == "4a":
+            self.w_vel = 1e-5
+            self.w_acc = 1e-5
+            self.w_target = 1e-1 
+            self.w_target_term = 20
+            self.obs_distance_link1 = 0.03
+            self.obs_distance_link2 = 0.03
+            self.obs_distance_fingertip = 0.03
+        elif expid == "5a":
+            self.w_vel = 1e-5
+            self.w_acc = 1e-5
+            self.w_target = 1e-1 
+            self.w_target_term = 12
+            self.obs_distance_link1 = 0.05
+            self.obs_distance_link2 = 0.05
+            self.obs_distance_fingertip = 0.05
+        else:
+            raise ValueError(f"Unknown experiment id: {expid}")
+
         # Casadi Pinocchio Model
         self.cpin_model = cpin.Model(robot_model.pin_model)
         self.cpin_data = self.cpin_model.createData()
@@ -79,6 +119,7 @@ class ReacherTrajopt():
             sol_X = [self.opti.value(var_x) for var_x in self.X]
             sol_Aq = [self.opti.value(var_a) for var_a in self.Aq]
             sol_U = [self.opti.value(var_u) for var_u in self.U]
+            print("COST:", self.opti.value(cost))
         except:
             raise Exception("ERROR in convergence")
         
@@ -89,11 +130,11 @@ class ReacherTrajopt():
         cost = 0
         
         for t in range(self.T):
-            cost += w_vel * self.robot_model.dt * casadi.sumsqr(self.X[t][self.robot_model.nq:])
-            cost += w_acc * self.robot_model.dt * casadi.sumsqr(self.Aq[t])
-            cost += w_target * casadi.sumsqr(self.target_error(self.X[t]))
+            cost += self.w_vel * self.robot_model.dt * casadi.sumsqr(self.X[t][self.robot_model.nq:])
+            cost += self.w_acc * self.robot_model.dt * casadi.sumsqr(self.Aq[t])
+            cost += self.w_target * casadi.sumsqr(self.target_error(self.X[t]))
                 
-        cost += w_target_term * casadi.sumsqr(self.target_error(self.X[self.T]))
+        cost += self.w_target_term * casadi.sumsqr(self.target_error(self.X[self.T]))
             
         return cost
         
@@ -105,10 +146,10 @@ class ReacherTrajopt():
             self.opti.subject_to(self.U[t] >= -1.0)
             
             for obstacle_idx in range(len(self.robot_model.obstacle_pos)):
-                self.opti.subject_to(self._ee_obstacle_distance(self.robot_model.pin_model.getFrameId("body1"), obstacle_idx)(self.X[t][:self.robot_model.nq]) >= 0.03)
-                self.opti.subject_to(self._ee_obstacle_distance(self.robot_model.pin_model.getFrameId("body2"), obstacle_idx)(self.X[t][:self.robot_model.nq]) >= 0.03)
-                self.opti.subject_to(self._ee_obstacle_distance(self.robot_model.pin_model.getFrameId("fingertip"), obstacle_idx)(self.X[t][:self.robot_model.nq]) >= 0.03)
-            
+                self.opti.subject_to(self._ee_obstacle_distance(self.robot_model.pin_model.getFrameId("body1"), obstacle_idx)(self.X[t][:self.robot_model.nq]) >= self.obs_distance_link1)
+                self.opti.subject_to(self._ee_obstacle_distance(self.robot_model.pin_model.getFrameId("body2"), obstacle_idx)(self.X[t][:self.robot_model.nq]) >= self.obs_distance_link2)
+                self.opti.subject_to(self._ee_obstacle_distance(self.robot_model.pin_model.getFrameId("fingertip"), obstacle_idx)(self.X[t][:self.robot_model.nq]) >= self.obs_distance_fingertip)
+
     def _ee_obstacle_distance(self, ee_frame_idx: int, obstacle_idx: int):
         obstacle_pos = self.robot_model.obstacle_pos[obstacle_idx]
         

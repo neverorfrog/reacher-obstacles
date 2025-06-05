@@ -10,7 +10,7 @@ from numpy.linalg import norm, solve
 
 class RobotModel:
     
-    def __init__(self, xml_path: str, target_pos: np.ndarray, obstacle_pos: List[np.ndarray], final_ee_name: str = "fingertip"):
+    def __init__(self, xml_path: str, target_pos: np.ndarray, obstacle_pos: List[np.ndarray], final_ee_name: str = "fingertip", q0: np.ndarray = None):
         self.xml_path = xml_path
         self.target_pos = target_pos
         self.obstacle_pos = obstacle_pos
@@ -56,7 +56,8 @@ class RobotModel:
         self.nq = self.pin_model.nq
         self.nv = self.pin_model.nv
         self.nu = self.nv
-        q0 = pin.neutral(self.pin_model)
+        if q0 is None:
+            q0 = pin.neutral(self.pin_model)
         self.pin_robot.q0 = q0
         self.pin_robot.a0 = np.zeros(self.nv)
         self.pin_robot.framesForwardKinematics(q0)
@@ -71,11 +72,9 @@ class RobotModel:
                 self.ee_id_list.append(ee_id)
         
         # Configuration
-        self.qpos = np.zeros(self.nq)
+        self.qpos = q0
         self.qvel = np.zeros(self.nv)
         self.qacc = np.zeros(self.nv)
-        
-        # self.target_q = 
         
         # Frames
         self.final_ee_frame = self.pin_model.getFrameId(final_ee_name)

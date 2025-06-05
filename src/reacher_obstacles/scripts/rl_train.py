@@ -68,6 +68,12 @@ if __name__ == "__main__":
     config: str = envid.split('_')[1]
     target_pos = CONFIGS[config]['target']
     target_pos = np.array([*target_pos, 0.015])
+    
+    try:
+        obstacles_pos = CONFIGS[config]['obstacles']
+    except KeyError:
+        obstacles_pos = []
+        
     train_env = make_vec_env(envid, n_envs=8, vec_env_cls=SubprocVecEnv)
     # train_env = gym.make(envid)
 
