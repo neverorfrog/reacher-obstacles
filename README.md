@@ -21,10 +21,10 @@ optimization.
 
 This work is based on the paper "Exploiting Robot Abstractions in Episodic RL via Reward Shaping and Heuristics". Please cite the original paper if you use this code in your research.
 
-<!-- ## Citation -->
+## Citation 
 
-<!-- If you use this code, please cite: -->
-<!-- 
+If you use this code, please cite:
+
 ```bibtex
 @article{cipollone2025exploiting,
   title={Exploiting Robot Abstractions in Episodic RL via Reward Shaping and Heuristics},
@@ -32,7 +32,7 @@ This work is based on the paper "Exploiting Robot Abstractions in Episodic RL vi
   journal={Elsevier},
   year={2025}
 }
-``` -->
+```
 
 ## Code Usage
 
