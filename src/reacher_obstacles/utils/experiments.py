@@ -9,9 +9,10 @@ class TaskConfig:
     Configuration for a reaching task.
     Defines target and obstacle positions.
     """
-    name: str                                    # 'FT', 'FTO1', etc.
+    name: str
     target: Tuple[float, float]                 # (x, y) target position
-    obstacles: Tuple[Tuple[float, float], ...] = field(default_factory=tuple)
+    obstacles: List[Tuple[float, float]] = field(default_factory=list)
+    init_qpos: np.ndarray = field(default_factory=lambda: np.array([-0.5, 0.0, 0.2]))
     
     @property
     def n_obstacles(self) -> int:
@@ -33,8 +34,16 @@ class ExperimentConfig:
     """
     experiment_id: str                 # '1a', '2b', etc.
     task: TaskConfig                   # Target and obstacles
+    train_steps: int                   # Number of training steps
     reward_heuristic: bool = False     # True if using reward heuristic (rhV)
-    train_steps: int = 100_000         # Number of RL training steps
+    
+    w_vel: float = 1e-5
+    w_acc: float = 1e-5
+    w_target: float = 1e-1 
+    w_target_term: float = 5
+    obs_distance_link1: float = 0.05
+    obs_distance_link2: float = 0.05
+    obs_distance_fingertip: float = 0.05
     
     @property
     def env_id(self) -> str:
@@ -76,27 +85,27 @@ TASKS = {
    '0a': TaskConfig(
       name='0a',
       target=(-0.075, 0.185),
-      obstacles=(),
+      obstacles=[],
+   ),
+   '0b': TaskConfig(
+      name='0b',
+      target=(0.0, 0.0),
+      obstacles=[],
    ),
    '1a': TaskConfig(
       name='1a',
-      target=(0.15, 0.15),
-      obstacles=((0.1, 0.05),),
-   ),
-   '1b': TaskConfig(
-      name='1b',
-      target=(0.15, 0.15),
-      obstacles=((0.0, 0.1),),
-   ),
-   '1c': TaskConfig(
-      name='1c',
-      target=(0.15, 0.15),
-      obstacles=((0.2, 0.1),),
+      target=(-0.075, -0.185),
+      obstacles=[(0.12, -0.15)],
    ),
    '2a': TaskConfig(
+      name='1b',
+      target=(-0.075, 0.185),
+      obstacles=[(0.12,0.17),(0.0,-0.1)],
+   ),
+   '3a': TaskConfig(
       name='2a',
-      target=(0.2, 0.0),
-      obstacles=((0.2, 0.2),(0.0, 0.2)),
+      target=(-0.15, 0.17),
+      obstacles=[(0.0,0.2),(-0.02,0.1),(0.12,0.17)],
    )
 }
 
@@ -106,11 +115,26 @@ TASKS = {
 # =====================================================
 
 EXPERIMENTS: Dict[str, ExperimentConfig] = {
-   '0a': ExperimentConfig('0a', TASKS['0a']),
-   '1a': ExperimentConfig('1a', TASKS['1a']),
-   '1b': ExperimentConfig('1b', TASKS['1b']),
-   '1c': ExperimentConfig('1c', TASKS['1c']),
-   '2a': ExperimentConfig('2a', TASKS['2a']),
+   '0aa': ExperimentConfig(
+       '0aa', TASKS['0a'], train_steps=50,
+       w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=5,
+       obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
+    ),
+    # '1aa': ExperimentConfig(
+    #      '1aa', TASKS['1a'], train_steps=100,
+    #      w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=20,
+    #      obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
+    #  ),
+    # '2aa': ExperimentConfig(
+    #      '2aa', TASKS['2a'], train_steps=50,
+    #      w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=50,
+    #      obs_distance_link1=0.03, obs_distance_link2=0.03, obs_distance_fingertip=0.04
+    #  ),
+    # '3aa': ExperimentConfig(
+    #      '3aa', TASKS['3a'], train_steps=100,
+    #      w_vel=1e-4, w_acc=1e-4, w_target= 1e-1, w_target_term=12,
+    #      obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
+    #  ),
 }
 
 

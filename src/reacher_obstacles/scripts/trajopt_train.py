@@ -52,6 +52,7 @@ qpos = np.array([-0.5, 0.0, 0.2])
 robot = RobotModel(xml_path, target_pos, obstacles_pos, q0=qpos)
 reacher_task = ReacherTrajopt(robot, nsteps, expid)
 X, A, U = reacher_task.solve(robot.qpos)
+exit(0)
 os.makedirs(f"{project_root()}/trajectories", exist_ok=True)
 np.savez(f"{project_root()}/trajectories/trajectory_{expid}.npz", X=X, A=A, U=U)
 

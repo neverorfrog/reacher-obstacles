@@ -46,7 +46,6 @@ class TrajectoryMetrics:
     
     # Metadata
     experiment_id: str
-    config: str
     method: str
     seed: int
     target_pos: np.ndarray
@@ -81,8 +80,8 @@ class TrajectoryDatasetBuilder:
         dt: float,
         metadata: Dict[str, Any],
         collision: bool,
-        dist_tolerance: float = 0.08,
-        safety_margin: float = 0.03,
+        dist_tolerance: float = 0.1,
+        safety_margin: float = 0.05,
     ) -> TrajectoryMetrics:
         """
         Compute all metrics from raw trajectory data.
@@ -208,7 +207,6 @@ class TrajectoryDatasetBuilder:
             
             # Metadata
             experiment_id=metadata['experiment_id'],
-            config=metadata['config'],
             method=metadata['method'],
             seed=metadata['seed'],
             target_pos=target_pos,
@@ -217,7 +215,6 @@ class TrajectoryDatasetBuilder:
             njoints=nq,
             dt=dt,
             algorithm_params=metadata.get('algorithm_params', {}),
-            optimization_time=metadata.get('optimization_time'),
             training_steps=metadata.get('training_steps'),
             converged=metadata.get('converged'),
         )
@@ -250,7 +247,7 @@ class TrajectoryDatasetBuilder:
                        'safety_margin_violations', 'execution_time', 'energy', 'smoothness',
                        'path_length', 'final_error', 'mean_error', 'settling_time',
                        'max_velocity', 'max_acceleration', 'control_effort', 'control_variation',
-                       'experiment_id', 'config', 'method', 'seed', 'njoints', 'dt']:
+                       'experiment_id', 'method', 'seed', 'njoints', 'dt']:
                 value = getattr(metrics, key)
                 if value is not None:
                     f.attrs[key] = value

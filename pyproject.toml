@@ -37,6 +37,7 @@ casadi = ">=3.6.7,<4"
 mediapy = ">=1.2.2,<2"
 example-robot-data = ">=4.2.0,<5"
 h5py = ">=3.14.0,<4"
+tyro = ">=0.9.28,<0.10"
 
 [tool.pixi.tasks]
 rl-train = "python src/reacher_obstacles/scripts/rl_train.py"

@@ -4,57 +4,23 @@ from reacher_obstacles.trajopt.robot_model import RobotModel
 import casadi
 from pinocchio import casadi as cpin
 import pinocchio as pin
+from reacher_obstacles.utils.experiments import ExperimentConfig
 
 class ReacherTrajopt():
     
-    def __init__(self, robot_model: RobotModel, T: int = 100, expid: str = "1a"):
+    def __init__(self, robot_model: RobotModel, exp: ExperimentConfig):
         self.robot_model = robot_model
-        self.T = T
         self.initialized = False
-        self.expid = expid
-        
-        if expid == "1a":
-            self.w_vel = 1e-5
-            self.w_acc = 1e-5
-            self.w_target = 1e-1 
-            self.w_target_term = 5
-            self.obs_distance_link1 = 0.05
-            self.obs_distance_link2 = 0.05
-            self.obs_distance_fingertip = 0.05
-        elif expid == "2a":
-            self.w_vel = 1e-5
-            self.w_acc = 1e-5
-            self.w_target = 1e-1 
-            self.w_target_term = 20
-            self.obs_distance_link1 = 0.05
-            self.obs_distance_link2 = 0.05
-            self.obs_distance_fingertip = 0.05
-        elif expid == "3a":
-            self.w_vel = 1e-5
-            self.w_acc = 1e-5
-            self.w_target = 1e-1 
-            self.w_target_term = 50
-            self.obs_distance_link1 = 0.03
-            self.obs_distance_link2 = 0.03
-            self.obs_distance_fingertip = 0.04
-        elif expid == "4a":
-            self.w_vel = 1e-5
-            self.w_acc = 1e-5
-            self.w_target = 1e-1 
-            self.w_target_term = 20
-            self.obs_distance_link1 = 0.03
-            self.obs_distance_link2 = 0.03
-            self.obs_distance_fingertip = 0.03
-        elif expid == "5a":
-            self.w_vel = 1e-5
-            self.w_acc = 1e-5
-            self.w_target = 1e-1 
-            self.w_target_term = 12
-            self.obs_distance_link1 = 0.05
-            self.obs_distance_link2 = 0.05
-            self.obs_distance_fingertip = 0.05
-        else:
-            raise ValueError(f"Unknown experiment id: {expid}")
+        self.expid = exp.experiment_id
+        T = exp.train_steps
+        self.T = T
+        self.w_vel = exp.w_vel
+        self.w_acc = exp.w_acc
+        self.w_target = exp.w_target
+        self.w_target_term = exp.w_target_term
+        self.obs_distance_link1 = exp.obs_distance_link1
+        self.obs_distance_link2 = exp.obs_distance_link2
+        self.obs_distance_fingertip = exp.obs_distance_fingertip
 
         # Casadi Pinocchio Model
         self.cpin_model = cpin.Model(robot_model.pin_model)
