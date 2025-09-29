@@ -36,12 +36,14 @@ pinocchio = "==3.4.0"
 casadi = ">=3.6.7,<4"
 mediapy = ">=1.2.2,<2"
 example-robot-data = ">=4.2.0,<5"
+h5py = ">=3.14.0,<4"
 
 [tool.pixi.tasks]
 rl-train = "python src/reacher_obstacles/scripts/rl_train.py"
 rl-eval = "python src/reacher_obstacles/scripts/rl_eval.py"
 trajopt-train = "python src/reacher_obstacles/scripts/trajopt_train.py"
 trajopt-eval = "python src/reacher_obstacles/scripts/trajopt_eval.py"
+build-dataset = "python src/reacher_obstacles/scripts/build_dataset.py"
 
 generate-stubs = """
 pybind11-stubgen mujoco -o .typings &&

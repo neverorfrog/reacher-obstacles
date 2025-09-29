@@ -1,8 +1,9 @@
+import mujoco
 import numpy as np
 from reacher_obstacles.trajopt.robot_model import RobotModel
 import casadi
 from pinocchio import casadi as cpin
-
+import pinocchio as pin
 
 class ReacherTrajopt():
     
@@ -25,9 +26,9 @@ class ReacherTrajopt():
             self.w_acc = 1e-5
             self.w_target = 1e-1 
             self.w_target_term = 20
-            self.obs_distance_link1 = 0.03
-            self.obs_distance_link2 = 0.03
-            self.obs_distance_fingertip = 0.03
+            self.obs_distance_link1 = 0.05
+            self.obs_distance_link2 = 0.05
+            self.obs_distance_fingertip = 0.05
         elif expid == "3a":
             self.w_vel = 1e-5
             self.w_acc = 1e-5
@@ -60,21 +61,42 @@ class ReacherTrajopt():
         self.cpin_data = self.cpin_model.createData()
         self.nx = robot_model.nq + robot_model.nv
         
+        self.damping = robot_model.damping
+        self.stiffness = robot_model.stiffness
+        self.qpos_spring = robot_model.qpos_spring
+        self.frictionloss = robot_model.frictionloss
+        
+        # Casadi symbols
         cx = casadi.SX.sym("x", self.nx, 1)
         self.cq = cx[:robot_model.nq]
+        self.cv = cx[robot_model.nq:]
         caq = casadi.SX.sym("a", robot_model.nv, 1)
         tauq = casadi.SX.sym("tau", robot_model.nv, 1)
-        cpin.forwardKinematics(self.cpin_model, self.cpin_data, cx[:robot_model.nq], cx[robot_model.nq:], caq)
+        
+        # Forward kinematics and dynamics
+        cpin.forwardKinematics(self.cpin_model, self.cpin_data, self.cq, self.cv, caq)
         cpin.updateFramePlacements(self.cpin_model, self.cpin_data)
-        cpin.aba(self.cpin_model, self.cpin_data, cx[:robot_model.nq], cx[robot_model.nq:], self.robot_model.gear_gains * tauq)
+        
+        # Compute gravity using CasADi Pinocchio
+        cpin.computeGeneralizedGravity(self.cpin_model, self.cpin_data, self.cq)
+        tau_gravity = self.cpin_data.g
+        
+        # Passive forces
+        tau_passive = (
+            - casadi.diag(self.damping) @ self.cv
+            - casadi.diag(self.stiffness) @ (self.cq - self.qpos_spring)
+            - casadi.diag(self.frictionloss) @ casadi.sign(self.cv)
+        )
+        
+        # Total torque
+        tau_total = robot_model.gear_gains * tauq + tau_gravity + tau_passive
+        
+        # Forward dynamics
+        cpin.aba(self.cpin_model, self.cpin_data, self.cq, self.cv, tau_total)
+        
         
         # Some functions needed in the casadi graph
-        self.caba = casadi.Function(
-            "aba",
-            [cx, tauq],
-            [self.cpin_data.ddq],
-        )
-
+        self.caba = casadi.Function("aba", [cx, tauq], [self.cpin_data.ddq])
         self.target_error = casadi.Function(
             "end_effector_error",
             [cx],
@@ -104,6 +126,28 @@ class ReacherTrajopt():
         self.Aq = [self.opti.variable(robot_model.nv) for t in range(T)]
         self.U = [self.opti.variable(robot_model.nv) for t in range(T)]
         
+        print("\n=== INITIAL STATE COMPARISON ===")
+        qpos_init = np.array([-0.5, 0.0, 0.2])
+
+        # Pinocchio initial state
+        robot_model.qpos = qpos_init.copy()
+        robot_model.qvel = np.zeros(3)
+        pin_qacc = pin.aba(robot_model.pin_model, robot_model.pin_data, robot_model.qpos, robot_model.qvel, np.zeros(3))
+        print(f"Pinocchio q0: {robot_model.qpos}")
+        print(f"Pinocchio qacc at rest (should be ~0 without gravity): {pin_qacc}")
+
+        # MuJoCo initial state
+        robot_model.mj_data.qpos[:robot_model.nq] = qpos_init.copy()
+        robot_model.mj_data.qvel[:robot_model.nq] = np.zeros(3)
+        robot_model.mj_data.ctrl[:] = np.zeros(3)
+        mujoco.mj_forward(robot_model.mj_model, robot_model.mj_data)  # Compute accelerations
+        print(f"MuJoCo q0: {robot_model.mj_data.qpos[:robot_model.nq]}")
+        print(f"MuJoCo qacc at rest: {robot_model.mj_data.qacc[:robot_model.nq]}")
+
+        # Check if they match
+        print(f"Position difference: {np.linalg.norm(robot_model.qpos - robot_model.mj_data.qpos[:robot_model.nq])}")
+        print(f"Acceleration difference: {np.linalg.norm(pin_qacc - robot_model.mj_data.qacc[:robot_model.nq])}")
+                
     
     def solve(self, q0: np.ndarray):
         self._set_initial_constraint(q0)
@@ -111,7 +155,7 @@ class ReacherTrajopt():
         self._set_constraints()
         self.opti.minimize(cost)
         self.opti.solver("ipopt")
-        p_opts, s_opts = {"ipopt.print_level": 4, "ipopt.tol": 1e-3, "ipopt.max_iter": 500_000, "expand": True}, {}
+        p_opts, s_opts = {"ipopt.print_level": 4, "ipopt.tol": 1e-4, "ipopt.max_iter": 500_000, "expand": True}, {}
         self.opti.solver("ipopt", p_opts, s_opts)
         
         try:
