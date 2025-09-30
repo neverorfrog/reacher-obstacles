@@ -6,7 +6,7 @@ import numpy as np
 from reacher_obstacles.utils import project_root, src_dir
 from reacher_obstacles.trajopt.robot_model import RobotModel
 from reacher_obstacles.trajopt.reacher_trajopt import ReacherTrajopt
-from reacher_obstacles.utils.experiments import EXPERIMENTS
+from reacher_obstacles.dataset.experiments import EXPERIMENTS
 from reacher_obstacles.dataset.builder import TrajectoryDatasetBuilder
 from reacher_obstacles.utils.plot import plot
 from reacher_obstacles.dataset.inspector import DatasetInspector
@@ -120,9 +120,9 @@ def main(args: Args):
 
     print("\n\n=== DATASET SUMMARY ===")
     builder.create_dataset(all_trajectories, dataset_name=args.name)
-    # inspector = DatasetInspector(f"{project_root()}/data/{args.name}.h5")
-    # inspector.print_summary()
-    # inspector.check_integrity()
+    inspector = DatasetInspector(f"{project_root()}/data/{args.name}.h5")
+    inspector.print_summary()
+    inspector.check_integrity()
 
 
 if __name__ == "__main__":

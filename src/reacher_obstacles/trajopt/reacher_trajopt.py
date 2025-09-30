@@ -4,7 +4,7 @@ from reacher_obstacles.trajopt.robot_model import RobotModel
 import casadi
 from pinocchio import casadi as cpin
 import pinocchio as pin
-from reacher_obstacles.utils.experiments import ExperimentConfig
+from reacher_obstacles.dataset.experiments import ExperimentConfig
 
 class ReacherTrajopt():
     

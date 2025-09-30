@@ -3,7 +3,7 @@ from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 import mujoco
 from reacher_obstacles.trajopt.robot_model import RobotModel
 import time
-from reacher_obstacles.utils.experiments import ExperimentConfig
+from reacher_obstacles.dataset.experiments import ExperimentConfig
 
 def plot(robot: RobotModel, U: np.ndarray, exp: ExperimentConfig):
     

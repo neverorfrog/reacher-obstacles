@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer
 
-from reacher_obstacles.utils.experiments import EXPERIMENTS
+from reacher_obstacles.dataset.experiments import EXPERIMENTS
 from reacher_obstacles.envs.reacher_v6 import CONFIGS
 
 xml_path = f"{src_dir()}/envs/assets/reacher3.xml"

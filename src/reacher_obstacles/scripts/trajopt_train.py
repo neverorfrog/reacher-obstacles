@@ -9,7 +9,7 @@ import mujoco
 from reacher_obstacles.trajopt.robot_model import RobotModel
 from reacher_obstacles.trajopt.reacher_trajopt import ReacherTrajopt
 
-from reacher_obstacles.utils.experiments import EXPERIMENTS
+from reacher_obstacles.dataset.experiments import EXPERIMENTS
 from reacher_obstacles.envs.reacher_v6 import CONFIGS
 
 from gymnasium.envs.mujoco.mujoco_rendering import MujocoRenderer

@@ -3,8 +3,8 @@
 import numpy as np
 import h5py
 from pathlib import Path
-from dataclasses import dataclass, asdict
-from typing import Optional, Dict, Any
+from dataclasses import dataclass
+from typing import Dict, Any
 import json
 
 @dataclass

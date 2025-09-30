@@ -12,7 +12,7 @@ import wandb
 
 import reacher_obstacles.envs
 from reacher_obstacles.envs.reacher_v6 import CONFIGS
-from reacher_obstacles.utils.experiments import EXPERIMENTS
+from reacher_obstacles.dataset.experiments import EXPERIMENTS
 
 os.makedirs("models", exist_ok=True)  # Create dirs
 os.makedirs("log", exist_ok=True)
