@@ -100,4 +100,64 @@ To just play the found trajectory
 
     pixi run trajopt-eval
 
+## Dataset Generation and Management
 
+This repository includes tools for generating, storing, and analyzing trajectory datasets from both trajectory optimization and RL methods.
+
+### Dataset Structure
+
+Trajectories are stored in HDF5 format with the following information:
+
+**Temporal Data:**
+- `qpos`: Joint positions over time (T+1, nq)
+- `qvel`: Joint velocities over time (T+1, nq)
+- `qacc`: Joint accelerations over time (T, nq)
+- `torques`: Control torques (T, nq)
+- `ee_pos`: End-effector positions (T+1, 3)
+- `ee_vel`: End-effector velocities (T+1, 3)
+- `timestamps`: Time stamps for each step (T+1,)
+- `obstacle_distances`: Distance to each obstacle (T+1, n_obstacles)
+
+**Metrics (stored as attributes):**
+- **Success metrics:** `success`, `goal_reached_step`, `final_error`, `mean_error`, `settling_time`
+- **Safety metrics:** `min_obstacle_distance`, `mean_obstacle_distance`, `collision`, `safety_margin_violations`
+- **Performance metrics:** `execution_time`, `energy`, `smoothness`, `path_length`, `max_velocity`, `max_acceleration`, `control_effort`, `control_variation`
+- **Metadata:** `experiment_config`, `method`, `seed`, `target_pos`, `obstacle_pos`, `initial_qpos`, `njoints`, `dt`
+
+### Dataset Metrics
+
+The following metrics are automatically computed for each trajectory:
+
+**Success Metrics:**
+- Distance tolerance: 0.05 m (configurable)
+- Success requires reaching target AND no collisions
+- Settling time computed when trajectory stays within tolerance
+
+**Safety Metrics:**
+- Safety margin: 0.06 m from obstacles (configurable)
+- Violations counted when distance < safety margin
+- Minimum and mean distances tracked
+
+**Performance Metrics:**
+- Energy: ∫ τ²dt (sum of squared torques)
+- Smoothness: ∫ q̈²dt (sum of squared accelerations)
+- Control effort: ∫ |τ|dt (L1 norm of torques)
+- Control variation: ∫ (dτ/dt)²dt (temporal smoothness)
+
+### Building a Dataset
+
+Generate trajectories for all experiments using trajectory optimization:
+
+```bash
+pixi run build-dataset [--plot] [--name DATASET_NAME]
+```
+
+Options:
+- `--plot`: Visualize trajectories during generation
+- `--name`: Name for the output dataset file (default: `trajopt_dataset`)
+
+This will:
+1. Solve trajectory optimization for each experiment in `EXPERIMENTS`
+2. Simulate the trajectories and compute all metrics
+3. Save individual trajectories to `data/trajectories/`
+4. Combine all trajectories into a single dataset file `data/DATASET_NAME.h5`
