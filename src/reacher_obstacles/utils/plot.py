@@ -12,6 +12,10 @@ def plot(robot: RobotModel, U: np.ndarray, exp: ExperimentConfig):
     mj_data: mujoco.MjData = robot.mj_data
     mj_data.qpos[:robot.nq] = exp.task.init_qpos
     mj_data.qvel[:robot.nq] = np.zeros(robot.nq)
+    robot.qpos = mj_data.qpos[:robot.nq].copy()
+    robot.qvel = mj_data.qvel[:robot.nq].copy()
+    robot.qacc = np.zeros(robot.nv)
+    robot.torque = np.zeros(robot.nv)
     mujoco.mj_forward(mj_model, mj_data)
     
     render_mode = "human"
@@ -21,15 +25,10 @@ def plot(robot: RobotModel, U: np.ndarray, exp: ExperimentConfig):
     errors = []
 
     renderer = MujocoRenderer(mj_model, mj_data)
-    # assert np.allclose(mj_data.qpos[:robot.nq], robot.qpos)
-    # assert np.allclose(mj_data.qvel[:robot.nq], robot.qvel)
-
+    collision = False
     for torque in U:
-        print(f"PINOCCHIO QPOS: {robot.qpos}")
-        print(f"MUJOCO QPOS: {mj_data.qpos[:robot.nq]}\n")
-        qacc, qvel, qpos = robot.apply_torque(torque)
-        # mj_data.qpos[:robot.nq] = robot.qpos
-        mj_data.ctrl[:robot.nu] = torque
+        robot.apply_torque(torque)
+        mj_data.qpos[:robot.nq] = robot.qpos
         mujoco.mj_step(mj_model, mj_data)
         
         ee_pos = mj_data.body("fingertip").xpos[0:2]
@@ -37,10 +36,23 @@ def plot(robot: RobotModel, U: np.ndarray, exp: ExperimentConfig):
         trajectory.append(ee_pos)
         errors.append(np.linalg.norm(ee_pos - exp.task.get_target_3d()))
         torques.append(torque)
+        
+        for i in range(mj_data.ncon):
+            contact = mj_data.contact[i]
+            geom1 = mj_model.geom(contact.geom1).name
+            geom2 = mj_model.geom(contact.geom2).name
+            if "obs" in geom1 or "obs" in geom2:
+                print(f"Collision with obstacle")
+                collision = True
+                break
+        if collision:
+            break
+        
     
         if render_mode == "human":
             pixels = renderer.render("human")
             time.sleep(0.1)
-            for p in trajectory:
-                renderer.viewer.add_marker(pos=p, size=0.005, label = "", rgba=[1, 1, 0, 1], type=2)
             frames.append(pixels)
+            
+    print(f"PINOCCHIO QPOS: {robot.qpos}")
+    print(f"MUJOCO QPOS: {mj_data.qpos[:robot.nq]}\n")

@@ -4,7 +4,7 @@
 		<joint armature="1" damping="1" limited="true"/>
 		<geom condim="1" contype="0" friction="0.1 0.001 0.001" rgba="0.7 0.7 0 1" density="1.0" />
 	</default>
-	<option gravity="0 0 -9.81" integrator="RK4" timestep="0.01"/>
+	<option gravity="0 0 -9.81" integrator="RK4" timestep="0.005"/>
 	
     <asset>
       <texture name="grid" type="2d" builtin="checker" rgb1=".6 .6 .6"
@@ -71,15 +71,6 @@
             <geom type="cylinder" name="obs3" rgba="0.2 0.9 0.9 1" size="0.02 0.02" density="0.1" contype="1" conaffinity="1" />
             <joint type="slide" name="obs3_x" pos="0 0 0" axis="1 0 0" range="-0.4 0.4" stiffness="0" damping="0" frictionloss="0.001" armature="0" />
             <joint type="slide" name="obs3_y" pos="0 0 0" axis="0 1 0" range="-0.4 0.4" stiffness="0" damping="0" frictionloss="0.001" armature="0" />
-        </body>
-
-        <!-- name="ushape" pos="-0.13 0.21 0.01" euler="0 0 -1.0" -->
-        <!-- name="obstacleu" pos="-0.075 0.25 0.01" euler="0 0 -1.571" -->
-
-        <body name="obstacleu" pos="0 0  -0.02" euler="0 0 0">
-            <geom type="capsule" name="obsu1" fromto="0 -0.1 0 0 +0.1 0" size="0.015" condim="1" contype="1" conaffinity="1" rgba="0.7 0.3 0.9 1" friction="100.0 0.1 0.1" density="1" margin="0.00" />
-            <geom type="capsule" name="obsu2" fromto="0 -0.1 0 0.15 -0.1 0" size="0.015" condim="1" contype="1" conaffinity="1" rgba="0.7 0.3 0.9 1" friction="100.0 0.1 0.1" density="1" margin="0.00" />
-            <geom type="capsule" name="obsu3" fromto="0 +0.1 0 0.15 +0.1 0" size="0.015" condim="1" contype="1" conaffinity="1" rgba="0.7 0.3 0.9 1" friction="100.0 0.1 0.1" density="1" margin="0.00" />
         </body>
 
 

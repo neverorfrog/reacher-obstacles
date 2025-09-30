@@ -93,8 +93,7 @@ class ReacherTrajopt():
         self.U = [self.opti.variable(robot_model.nv) for t in range(T)]
         
         print("\n=== INITIAL STATE COMPARISON ===")
-        qpos_init = np.array([-0.5, 0.0, 0.2])
-
+        qpos_init = exp.task.init_qpos
         # Pinocchio initial state
         robot_model.qpos = qpos_init.copy()
         robot_model.qvel = np.zeros(3)
@@ -121,7 +120,7 @@ class ReacherTrajopt():
         self._set_constraints()
         self.opti.minimize(cost)
         self.opti.solver("ipopt")
-        p_opts, s_opts = {"ipopt.print_level": 4, "ipopt.tol": 1e-4, "ipopt.max_iter": 500_000, "expand": True}, {}
+        p_opts, s_opts = {"ipopt.print_level": 0, "ipopt.tol": 1e-3, "ipopt.max_iter": 1_000_000, "expand": True}, {}
         self.opti.solver("ipopt", p_opts, s_opts)
         
         try:

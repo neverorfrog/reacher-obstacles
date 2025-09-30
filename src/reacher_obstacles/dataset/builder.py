@@ -45,7 +45,7 @@ class TrajectoryMetrics:
     control_variation: float
     
     # Metadata
-    experiment_id: str
+    experiment_config: Dict[str, Any]
     method: str
     seed: int
     target_pos: np.ndarray
@@ -54,19 +54,15 @@ class TrajectoryMetrics:
     njoints: int
     dt: float
     
-    # Algorithm specific
-    algorithm_params: Dict[str, Any]
-    optimization_time: Optional[float] = None
-    training_steps: Optional[int] = None
-    converged: Optional[bool] = None
-
 
 class TrajectoryDatasetBuilder:
     """Build trajectory datasets from simulation results."""
     
-    def __init__(self, output_dir: str = "datasets"):
+    def __init__(self, output_dir: str = "data"):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        self.trajectories_dir = self.output_dir / "trajectories"
+        self.trajectories_dir.mkdir(exist_ok=True)
         
     def compute_metrics(
         self,
@@ -80,8 +76,8 @@ class TrajectoryDatasetBuilder:
         dt: float,
         metadata: Dict[str, Any],
         collision: bool,
-        dist_tolerance: float = 0.1,
-        safety_margin: float = 0.05,
+        dist_tolerance: float = 0.05,
+        safety_margin: float = 0.06,
     ) -> TrajectoryMetrics:
         """
         Compute all metrics from raw trajectory data.
@@ -206,7 +202,7 @@ class TrajectoryDatasetBuilder:
             control_variation=float(control_variation),
             
             # Metadata
-            experiment_id=metadata['experiment_id'],
+            experiment_config=metadata['experiment_config'],
             method=metadata['method'],
             seed=metadata['seed'],
             target_pos=target_pos,
@@ -214,16 +210,13 @@ class TrajectoryDatasetBuilder:
             initial_qpos=qpos[0],
             njoints=nq,
             dt=dt,
-            algorithm_params=metadata.get('algorithm_params', {}),
-            training_steps=metadata.get('training_steps'),
-            converged=metadata.get('converged'),
         )
         
         return metrics
     
     def save_trajectory(self, metrics: TrajectoryMetrics, filename: str):
         """Save single trajectory to HDF5."""
-        filepath = self.output_dir / f"{filename}.h5"
+        filepath = self.trajectories_dir / f"{filename}.h5"
         
         with h5py.File(filepath, 'w') as f:
             # Temporal data
@@ -247,22 +240,15 @@ class TrajectoryDatasetBuilder:
                        'safety_margin_violations', 'execution_time', 'energy', 'smoothness',
                        'path_length', 'final_error', 'mean_error', 'settling_time',
                        'max_velocity', 'max_acceleration', 'control_effort', 'control_variation',
-                       'experiment_id', 'method', 'seed', 'njoints', 'dt']:
+                       'experiment_config', 'method', 'seed', 'njoints', 'dt']:
                 value = getattr(metrics, key)
                 if value is not None:
-                    f.attrs[key] = value
-            
-            # JSON-serialize algorithm params
-            f.attrs['algorithm_params'] = json.dumps(metrics.algorithm_params)
-            
-            # Optional fields
-            if metrics.optimization_time is not None:
-                f.attrs['optimization_time'] = metrics.optimization_time
-            if metrics.training_steps is not None:
-                f.attrs['training_steps'] = metrics.training_steps
-            if metrics.converged is not None:
-                f.attrs['converged'] = metrics.converged
-        
+                    if key == 'experiment_config':
+                        # Serialize dict to JSON string
+                        f.attrs[key] = json.dumps(value)
+                    else:
+                        f.attrs[key] = value
+
         print(f"Saved trajectory to {filepath}")
     
     def create_dataset(self, trajectory_files: list, dataset_name: str):
@@ -276,7 +262,7 @@ class TrajectoryDatasetBuilder:
             
             # Load and store each trajectory
             for i, traj_file in enumerate(trajectory_files):
-                traj_path = self.output_dir / f"{traj_file}.h5"
+                traj_path = self.trajectories_dir / f"{traj_file}.h5"
                 with h5py.File(traj_path, 'r') as traj_f:
                     # Copy trajectory data
                     traj_group = f['trajectories'].create_group(f'traj_{i:04d}')

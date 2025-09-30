@@ -148,8 +148,7 @@ class DatasetInspector:
                 checks_passed = False
             
             # Check 4: Required attributes exist
-            required_attrs = ['success', 'experiment_id', 
-                            'method', 'final_error', 'energy']
+            required_attrs = ['success', 'experiment_config', 'method', 'final_error', 'energy']
             print(f"  ✓ Attribute check:")
             for attr in required_attrs:
                 if attr in traj.attrs:

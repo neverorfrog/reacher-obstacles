@@ -64,6 +64,13 @@ class ExperimentConfig:
             'train_steps': self.train_steps,
             'env_id': self.env_id,
             'n_obstacles': self.task.n_obstacles,
+            'w_vel': self.w_vel,
+            'w_acc': self.w_acc,
+            'w_target': self.w_target,
+            'w_target_term': self.w_target_term,
+            'obs_distance_link1': self.obs_distance_link1,
+            'obs_distance_link2': self.obs_distance_link2,
+            'obs_distance_fingertip': self.obs_distance_fingertip,
         }
     
     def __str__(self) -> str:
@@ -87,23 +94,25 @@ TASKS = {
       target=(-0.075, 0.185),
       obstacles=[],
    ),
-   '0b': TaskConfig(
-      name='0b',
-      target=(0.0, 0.0),
-      obstacles=[],
-   ),
    '1a': TaskConfig(
       name='1a',
       target=(-0.075, -0.185),
-      obstacles=[(0.12, -0.15)],
+      obstacles=[(0.2, -0.15)],
+      init_qpos=np.array([0.0, 0.0, 0.2])
    ),
    '2a': TaskConfig(
-      name='1b',
+      name='2a',
       target=(-0.075, 0.185),
       obstacles=[(0.12,0.17),(0.0,-0.1)],
    ),
+   '2b': TaskConfig(
+        name='2b',
+        target=(0.1, 0.25),
+        obstacles=[(0.12,0.15),(0.12,-0.17)],
+        init_qpos=np.array([0.0, 0.0, 0.2])
+   ),   
    '3a': TaskConfig(
-      name='2a',
+      name='3a',
       target=(-0.15, 0.17),
       obstacles=[(0.0,0.2),(-0.02,0.1),(0.12,0.17)],
    )
@@ -115,26 +124,36 @@ TASKS = {
 # =====================================================
 
 EXPERIMENTS: Dict[str, ExperimentConfig] = {
-   '0aa': ExperimentConfig(
-       '0aa', TASKS['0a'], train_steps=50,
-       w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=5,
-       obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
+    '0aa': ExperimentConfig(
+        '0aa', TASKS['0a'], train_steps=150,
+        w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=5,
+        obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
     ),
-    # '1aa': ExperimentConfig(
-    #      '1aa', TASKS['1a'], train_steps=100,
-    #      w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=20,
-    #      obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
-    #  ),
-    # '2aa': ExperimentConfig(
-    #      '2aa', TASKS['2a'], train_steps=50,
-    #      w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=50,
-    #      obs_distance_link1=0.03, obs_distance_link2=0.03, obs_distance_fingertip=0.04
-    #  ),
-    # '3aa': ExperimentConfig(
-    #      '3aa', TASKS['3a'], train_steps=100,
-    #      w_vel=1e-4, w_acc=1e-4, w_target= 1e-1, w_target_term=12,
-    #      obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
-    #  ),
+    '1aa': ExperimentConfig(
+        '1aa', TASKS['1a'], train_steps=150,
+        w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=20,
+        obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
+    ),
+    '2aa': ExperimentConfig(
+         '2aa', TASKS['2a'], train_steps=150,
+         w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=50,
+         obs_distance_link1=0.03, obs_distance_link2=0.03, obs_distance_fingertip=0.04
+     ),
+    '2ab': ExperimentConfig(
+         '2ab', TASKS['2a'], train_steps=150,
+         w_vel=1e-4, w_acc=1e-4, w_target= 1e-1, w_target_term=10,
+         obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
+     ),
+    '2ba': ExperimentConfig(
+         '2ba', TASKS['2b'], train_steps=150,
+         w_vel=1e-5, w_acc=1e-5, w_target= 1e-1, w_target_term=50,
+         obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.1
+     ),
+    '3aa': ExperimentConfig(
+         '3aa', TASKS['3a'], train_steps=150,
+         w_vel=1e-4, w_acc=1e-4, w_target= 1e-1, w_target_term=12,
+         obs_distance_link1=0.05, obs_distance_link2=0.05, obs_distance_fingertip=0.05
+     ),
 }
 
 
