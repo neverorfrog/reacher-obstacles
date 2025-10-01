@@ -16,14 +16,9 @@ optimization.
 <img src="assets/env4.png" alt="env" width="400">
 </div>
 
-
-## Acknowledgements
-
-This work is based on the paper "Exploiting Robot Abstractions in Episodic RL via Reward Shaping and Heuristics". Please cite the original paper if you use this code in your research.
-
 ## Citation 
 
-If you use this code, please cite:
+This work is based on the paper "Exploiting Robot Abstractions in Episodic RL via Reward Shaping and Heuristics". Please cite the original paper if you use this code in your research.
 
 ```bibtex
 @article{cipollone2025exploiting,
@@ -161,3 +156,7 @@ This will:
 2. Simulate the trajectories and compute all metrics
 3. Save individual trajectories to `data/trajectories/`
 4. Combine all trajectories into a single dataset file `data/DATASET_NAME.h5`
+
+## Acknowledgement
+
+This work has been supported by PNRR MUR project PE0000013-FAIR
